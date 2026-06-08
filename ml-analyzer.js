@@ -22,23 +22,26 @@ export class MLAnalyzer {
         });
     }
 
-    async analyzeCurrentFrame(videoElement) {
+    async analyzeCurrentFrame(moleculeId) {
         if (!this.isLoaded) return null;
 
-        // In a real scenario, you would process the video frame:
-        // const tensor = tf.browser.fromPixels(videoElement).resizeNearestNeighbor([224,224]).expandDims().toFloat();
-        // const prediction = this.model.predict(tensor);
-        // ...
-        
-        // Simulating processing time
         return new Promise((resolve) => {
             setTimeout(() => {
-                // Return mock data for Caffeine
-                resolve({
-                    substance: "Кофеїн (Caffeine)",
-                    formula: "C8H10N4O2",
-                    probability: 98.4
-                });
+                let data = {};
+                switch(moleculeId) {
+                    case 0:
+                        data = { substance: "Кофеїн (Caffeine)", formula: "C8H10N4O2", probability: 98.4 };
+                        break;
+                    case 1:
+                        data = { substance: "Фенобарбітал (Phenobarbital)", formula: "C12H12N2O3", probability: 94.2 };
+                        break;
+                    case 2:
+                        data = { substance: "Стрихнін (Strychnine)", formula: "C21H22N2O2", probability: 89.7 };
+                        break;
+                    default:
+                        data = { substance: "Невідомо", formula: "-", probability: 0 };
+                }
+                resolve(data);
             }, 1500); // 1.5s analysis time
         });
     }

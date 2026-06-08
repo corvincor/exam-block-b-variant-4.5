@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { MindARThree } from 'mindar-image-three';
-import { buildCaffeineMolecule } from './molecule-builder.js';
+import { buildCaffeineMolecule, buildPhenobarbitalMolecule, buildStrychnineMolecule } from './molecule-builder.js';
 import { MLAnalyzer } from './ml-analyzer.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -24,10 +24,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await mlAnalyzer.loadModel();
 
     // Initialize MindAR
-    // Using a sample target from official mindar docs for demonstration
+    // NOTE: This default target might only have 1 or 2 images. 
+    // To see all 3, you MUST compile your own targets.mind with the 3 PNG markers.
     const mindarThree = new MindARThree({
         container: document.getElementById('ar-container'),
-        imageTargetSrc: './assets/targets.mind',
+        imageTargetSrc: 'https://hiukim.github.io/mind-ar-js-doc/assets/targets.mind',
         uiLoading: "no",
         uiScanning: "no",
         uiError: "no"
@@ -42,45 +43,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     directionalLight.position.set(0, 10, 0);
     scene.add(directionalLight);
 
-    // Build 3D Molecule
-    const caffeineMolecule = buildCaffeineMolecule();
+    // Build 3D Molecules
+    const molecules = [
+        buildCaffeineMolecule(),
+        buildPhenobarbitalMolecule(),
+        buildStrychnineMolecule()
+    ];
     
-    // Anchor
-    const anchor = mindarThree.addAnchor(0);
-    anchor.group.add(caffeineMolecule);
-
     let isScanning = false;
     let moleculeRotationSpeed = 0.01;
+    let currentMoleculeId = null;
 
-    // Marker Found Event
-    anchor.onTargetFound = () => {
-        statusDot.className = 'dot green';
-        statusText.innerText = 'Маркер знайдено!';
-        infoPanel.classList.add('hidden');
-        
-        if (!isScanning && mlPanel.classList.contains('hidden')) {
-            startAnalysis();
-        }
-    };
+    // Setup Anchors
+    for(let i = 0; i < molecules.length; i++) {
+        const anchor = mindarThree.addAnchor(i);
+        anchor.group.add(molecules[i]);
 
-    // Marker Lost Event
-    anchor.onTargetLost = () => {
-        statusDot.className = 'dot red';
-        statusText.innerText = 'Шукаю маркер спектру...';
-        mlPanel.classList.add('hidden');
-        infoPanel.classList.remove('hidden');
-        
-        // Reset ML UI
-        substanceNameEl.innerText = "Невідомо";
-        chemicalFormulaEl.style.color = "var(--text-secondary)";
-        chemicalFormulaEl.innerText = "-";
-        probabilityTextEl.innerText = "0%";
-        probabilityBarEl.style.width = "0%";
-        moleculeRotationSpeed = 0.01;
-    };
+        anchor.onTargetFound = () => {
+            currentMoleculeId = i;
+            statusDot.className = 'dot green';
+            statusText.innerText = 'Маркер знайдено!';
+            infoPanel.classList.add('hidden');
+            
+            if (!isScanning && mlPanel.classList.contains('hidden')) {
+                startAnalysis(currentMoleculeId);
+            }
+        };
+
+        anchor.onTargetLost = () => {
+            if (currentMoleculeId === i) {
+                currentMoleculeId = null;
+                statusDot.className = 'dot red';
+                statusText.innerText = 'Шукаю маркер спектру...';
+                mlPanel.classList.add('hidden');
+                infoPanel.classList.remove('hidden');
+                
+                // Reset ML UI
+                substanceNameEl.innerText = "Невідомо";
+                chemicalFormulaEl.style.color = "var(--text-secondary)";
+                chemicalFormulaEl.innerText = "-";
+                probabilityTextEl.innerText = "0%";
+                probabilityBarEl.style.width = "0%";
+                moleculeRotationSpeed = 0.01;
+            }
+        };
+    }
 
     // Start Analysis
-    async function startAnalysis() {
+    async function startAnalysis(moleculeId) {
+        if (moleculeId === null) return;
+
         isScanning = true;
         moleculeRotationSpeed = 0.05; // Spin faster while analyzing
         
@@ -93,9 +105,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         mlPanel.classList.remove('hidden');
 
         // Call ML Model
-        const result = await mlAnalyzer.analyzeCurrentFrame(null); // passing null as it's mocked
+        const result = await mlAnalyzer.analyzeCurrentFrame(moleculeId);
 
-        if (result) {
+        if (result && currentMoleculeId === moleculeId) { // Check if we are still looking at the same marker
             substanceNameEl.innerText = result.substance;
             substanceNameEl.style.color = "var(--accent-color)";
             chemicalFormulaEl.innerText = result.formula;
@@ -114,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Manual Scan Button
     scanBtn.addEventListener('click', () => {
-        startAnalysis();
+        startAnalysis(currentMoleculeId);
     });
 
     // Start AR Engine
@@ -129,11 +141,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Render Loop
     renderer.setAnimationLoop(() => {
-        // Animate molecule
-        if (caffeineMolecule) {
-            caffeineMolecule.rotation.y += moleculeRotationSpeed;
-            caffeineMolecule.rotation.x += moleculeRotationSpeed * 0.5;
-        }
+        // Animate all molecules
+        molecules.forEach(mol => {
+            mol.rotation.y += moleculeRotationSpeed;
+            mol.rotation.x += moleculeRotationSpeed * 0.5;
+        });
         renderer.render(scene, camera);
     });
 });
