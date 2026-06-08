@@ -5,34 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Аналітична Хімія</title>
     
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
-    <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
 
-    <!-- Dependencies via CDN -->
-    <!-- THREE.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- MindAR -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
-    <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 </head>
 <body>
-    <!-- AR Container -->
     <div id="ar-container"></div>
 
-    <!-- UI Overlay -->
     <div id="ui-layer">
-        <!-- Loading Screen -->
         <div id="loading-screen" class="glass-panel active">
             <div class="spinner"></div>
             <h2>Ініціалізація AR...</h2>
             <p>Завантаження моделей та нейромережі</p>
         </div>
 
-        <!-- Main Dashboard (Header) -->
         <header id="top-bar" class="glass-panel hidden">
             <div class="logo">
                 <span class="neon-text">Chem</span>AR
@@ -43,7 +33,6 @@
             </div>
         </header>
 
-        <!-- ML Analysis Results Panel -->
         <div id="ml-panel" class="glass-panel hidden">
             <h3>Аналіз Речовини</h3>
             <div class="ml-result">
@@ -66,13 +55,11 @@
             <button id="scan-btn" class="primary-btn">Сканувати ще раз</button>
         </div>
         
-        <!-- Info Panel for instructions -->
         <div id="info-panel" class="glass-panel hidden">
             <p>Наведіть камеру на маркер хроматограми, щоб розпізнати речовину та побачити її молекулярну структуру.</p>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script type="module" src="molecule-builder.js"></script>
     <script type="module" src="ml-analyzer.js"></script>
     <script type="module" src="app.js"></script>
