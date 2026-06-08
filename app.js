@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Using a sample target from official mindar docs for demonstration
     const mindarThree = new window.MINDAR.IMAGE.MindARThree({
         container: document.getElementById('ar-container'),
-        imageTargetSrc: 'https://hiukim.github.io/mind-ar-js-doc/assets/targets.mind',
+        imageTargetSrc: './assets/targets.mind',
         uiLoading: "no",
         uiScanning: "no",
         uiError: "no"
